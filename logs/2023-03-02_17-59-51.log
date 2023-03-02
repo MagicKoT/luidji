@@ -1,9 +1,0 @@
-2023-03-02 17:59:51,692 WARNING discord.client PyNaCl is not installed, voice will NOT be supported
-2023-03-02 17:59:51,696 INFO discord.client logging in using static token
-2023-03-02 17:59:52,148 INFO discord.gateway Shard ID None has sent the IDENTIFY payload.
-2023-03-02 17:59:52,401 INFO discord.gateway Shard ID None has connected to Gateway: ["gateway-prd-us-east1-b-vlhn",{"micros":109587,"calls":["id_created",{"micros":2877,"calls":[]},"session_lookup_time",{"micros":362,"calls":[]},"session_lookup_finished",{"micros":16,"calls":[]},"discord-sessions-blue-prd-2-103",{"micros":105193,"calls":["start_session",{"micros":70973,"calls":["discord-api-5dccf4fcff-jgcjt",{"micros":63836,"calls":["get_user",{"micros":20724},"get_guilds",{"micros":5178},"send_scheduled_deletion_message",{"micros":11},"guild_join_requests",{"micros":1},"authorized_ip_coro",{"micros":33}]}]},"starting_guild_connect",{"micros":75,"calls":[]},"presence_started",{"micros":319,"calls":[]},"guilds_started",{"micros":103,"calls":[]},"guilds_connect",{"micros":2,"calls":[]},"presence_connect",{"micros":33657,"calls":[]},"connect_finished",{"micros":33663,"calls":[]},"build_ready",{"micros":22,"calls":[]},"clean_ready",{"micros":1,"calls":[]},"optimize_ready",{"micros":24,"calls":[]},"split_ready",{"micros":1,"calls":[]}]}]}] (Session ID: e1b03cdb712572ea387a69f33a8ece64).
-2023-03-02 17:59:52,525 INFO discord.client Received signal to terminate bot and event loop.
-2023-03-02 17:59:52,525 INFO discord.client Cleaning up tasks.
-2023-03-02 17:59:52,525 INFO discord.client Cleaning up after 3 tasks.
-2023-03-02 17:59:52,526 INFO discord.client All tasks finished cancelling.
-2023-03-02 17:59:52,526 INFO discord.client Closing the event loop.

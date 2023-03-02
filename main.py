@@ -4,7 +4,7 @@ import os
 import asyncio
 from datetime import datetime, timedelta
 from discord.ext import commands
-from globals import conf, owners, token, prefix, host, user, password, database
+from globals import conf, owners, token, prefix
 import logging
 import logging.handlers
 
@@ -21,9 +21,6 @@ logging.basicConfig(
     ]
 )
 
-# Подключение к базе данных MySQL
-mydb = mysql.connector.connect(host=host, user=user, password=password, database=database)
-
 # Инициализация бота
 intent = discord.Intents.all()
 client = commands.Bot(intents=intent, command_prefix=prefix)
@@ -33,8 +30,9 @@ for filename in os.listdir('./cogs'):
     if filename.endswith('.py') and filename != '__init__.py':
         try:
           client.load_extension(f'cogs.{filename[:-3]}')
-        except:
+        except Exception as e:
           print(f"Ошибка загрузки модуля {filename[:-3]}")
+          print(e)
 
 @client.event
 async def on_ready():

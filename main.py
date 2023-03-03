@@ -4,12 +4,9 @@ import os
 import asyncio
 from datetime import datetime, timedelta
 from discord.ext import commands
-import configparser
+from globals import conf, owners, token, prefix
 import logging
 import logging.handlers
-
-config = configparser.ConfigParser()
-config.read('config.ini')
 
 # Создаем папку logs, если ее нет
 if not os.path.exists('logs'):
@@ -24,71 +21,54 @@ logging.basicConfig(
     ]
 )
 
-# Подключение к базе данных MySQL
-mydb = mysql.connector.connect(
-  host=config.get('database', 'host'),
-  user=config.get('database', 'user'),
-  password=config.get('database', 'password'),
-  database=config.get('database', 'database')
-)
-
-owners = config.get('Settings', 'Owners')
-token = config.get('Settings', 'Token')
-prefix = config.get('Settings', 'Prefix')
-
 # Инициализация бота
 intent = discord.Intents.all()
 client = commands.Bot(intents=intent, command_prefix=prefix)
 
 # Загрузка модулей из папки cogs
 for filename in os.listdir('./cogs'):
-    if filename.endswith('.py'):
+    if filename.endswith('.py') and filename != '__init__.py':
         try:
           client.load_extension(f'cogs.{filename[:-3]}')
-        except:
+        except Exception as e:
           print(f"Ошибка загрузки модуля {filename[:-3]}")
+          print(e)
 
 @client.event
 async def on_ready():
     logging.info(f'{client.user.name} has connected to Discord!')
 
+def is_owner(ctx):
+    return ctx.author.id in owners
+
 @client.command()
+@commands.check(is_owner)
 async def load(ctx, modul):
-    if ctx.author.id in owners:
-      try:
+    try:
           client.load_extension(f"cogs.{modul}")
-      except:
-          await ctx.send("Ошибка при загрузке модуля")
-    else:
-        ctx.send("У вас не достаточно прав на данную комманду")
-        print(f"Привышение полномочий со стороны пользователя {ctx.author.name} его id = {ctx.author.id}")
-        print(f"попытка загрузить модуль {modul}")
-        logging.warn(f'Нарушение: попытка загрузить модуль {modul} пользователем {ctx.author.name} его id = {ctx.author.id}')
+          await ctx.message.add_reaction("✅")
+    except:
+          massage = ctx.send("Ошибка при загрузке модуля")
+          await massage.add_reaction("❌")
 
 @client.command()
+@commands.check(is_owner)
 async def unload(ctx, modul):
-    if ctx.author.id in owners:
-      try:
-          client.unload_extension(f"cogs.{modul}")
-      except:
-          await ctx.send("Ошибка при выгрузке модуля")
-    else:
-        ctx.send("У вас не достаточно прав на данную комманду")
-        print(f"Привышение полномочий со стороны пользователя {ctx.author.name} его id = {ctx.author.id}")
-        print(f"попытка выгрузить модуль {modul}")
-        logging.warn(f'Нарушение: попытка выгрузить модуль {modul} пользователем {ctx.author.name} его id = {ctx.author.id}')
+    try:
+        client.unload_extension(f"cogs.{modul}")
+        await ctx.message.add_reaction("✅")
+    except:
+        massage = ctx.send("Ошибка при выгрузке модуля")
+        await massage.add_reaction("❌")
 
 @client.command()
+@commands.check(is_owner)
 async def reload(ctx, modul):
-    if ctx.author.id in owners:
-      try:
-          client.reload_extension(f"cogs.{modul}")
-      except:
-          await ctx.send("Ошибка при перезарузке модуля")
-    else:
-        ctx.send("У вас не достаточно прав на данную комманду")
-        print(f"Привышение полномочий со стороны пользователя {ctx.author.name} его id = {ctx.author.id}")
-        print(f"попытка перезагрузить модуль {modul}")
-        logging.warn(f'Нарушение: попытка перезагрузить модуль {modul} пользователем {ctx.author.name} его id = {ctx.author.id}')
+    try:
+        client.reload_extension(f"cogs.{modul}")
+        await ctx.message.add_reaction("✅")
+    except:
+        massage = ctx.send("Ошибка при перезарузке модуля")
+        await massage.add_reaction("❌")
 
 client.run(token)

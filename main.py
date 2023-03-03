@@ -1,5 +1,5 @@
 import discord
-import mysql.connector
+from database import db
 import os
 import asyncio
 from datetime import datetime, timedelta
@@ -37,6 +37,11 @@ for filename in os.listdir('./cogs'):
 @client.event
 async def on_ready():
     logging.info(f'{client.user.name} has connected to Discord!')
+    for guild in client.guilds:
+        try:
+            db.query(f"INSERT IGNORE INTO guild_config (guild_id) VALUES ({guild.id})")
+        except:
+            print(f"Ошибка при добавление или проверке сервера {guild.name} его id {guild.id}")
 
 def is_owner(ctx):
     return ctx.author.id in owners

@@ -36,57 +36,71 @@ class eco(commands.Cog):
 
         db.disconnect()
 
-        members = db.query("SELECT * FROM member")
-        print(members)
-
-        members = db.query("SELECT * FROM member")
-        print(members)
-
-        db.disconnect()
-
-        return
     
     @commands.Cog.listener()
     async def on_voice_state_update(self, member, before, after):
-        now = int(time.time())
+        now = time.time()
         if before.channel is None and after.channel is not None:
             channel_id = after.channel.id
             guild_id = after.channel.guild.id
-            # Подключаемся к базе данных
-            db.init()
-
             # Проверяем, есть ли пользователь в базе данных
-            result = db.query(f"SELECT * FROM voice_state WHERE id = {member.id}")
+            result = db.query(f"SELECT * FROM voice_state WHERE member_id = {member.id} AND guild_id = {guild_id}")
 
             # Если пользователь есть в базе данных, обновляем данные о времени подключения и канале
             if result:
-                db.query(f"UPDATE voice_state SET con_time = {int(time.time())}, guild_id = {member.guild.id}, last_channel_id = {after.channel.id} WHERE id = {member.id}")
+                db.query(f"UPDATE voice_state SET con_time = {int(time.time())}, guild_id = {member.guild.id}, last_channel_id = {after.channel.id} WHERE member_id = {member.id}")
             # Если пользователь не найден, добавляем его в базу данных
             else:
-                db.query(f"INSERT INTO voice_state (id, con_time, dis_time, guild_id, last_channel_id) VALUES ({member.id}, {int(time.time())}, 0, {member.guild.id}, {after.channel.id})")
+                db.query(f"INSERT INTO voice_state (member_id, con_time, guild_id, last_channel_id) VALUES ({member.id}, {int(time.time())}, {member.guild.id}, {after.channel.id})")
                 db.disconnect()
 
         elif before.channel is not None and after.channel is None:
             channel_id = before.channel.id
             guild_id = before.channel.guild.id
+            guild = before.channel.guild
             # Подключаемся к базе данных
             db.init()
-            result = db.query(f"SELECT con_time, last_channel_id FROM voice_state WHERE user_id = {member.id} AND guild_id = {member.guild.id} ORDER BY con_time DESC LIMIT 1")
+            result = db.query(f"SELECT con_time, voice_active FROM voice_state WHERE member_id = {member.id} AND guild_id = {member.guild.id}")
             if result:
-                con_time, last_channel_id = result[0]
+                config_bank = db.query(f"SELECT cof_bal FROM guild_config WHERE guild_id = {guild.id}")
+                if len(config_bank) == 0:
+                    try:
+                        db.query(f"INSERT IGNORE INTO guild_config (guild_id) VALUES ({guild.id})")
+                        cof = 1
+                    except:
+                        print(f"Ошибка при добавление или проверке сервера {guild.name} его id {guild.id}")
+                else:
+                    cof = config_bank[0]["cof_bal"]
+                con_time, voice_activ = result[0].values()
                 channel_duration = now - con_time
-                rval = channel_duration / 60
+                if voice_activ is not None:
+                    va = voice_activ + channel_duration
+                else:
+                    va = channel_duration
+                rval = (channel_duration * cof) / 60
                 val = round(rval)
+                bal = db.query(f"SELECT bank FROM eco WHERE member_id = {member.id} AND guild_id = {guild_id}")
+                corect_bal = bal[0]["bank"]
+                if corect_bal is None:
+                    new_bal = val
+                elif corect_bal is not None:
+                    new_bal = corect_bal + val
+                else:
+                    print(f"ошибка запроса баланса пользователя {member.name} на сервер {guild.name}")
+                    return
                 # подсчет времени проведенного в войсе и внесение данные а БД + внесение валюты за активность в войсе
-                db.query(f"UPDATE voice_state SET dis_time = {now}, last_channel_id = {before.channel.id}, duration = {channel_duration} WHERE user_id = {member.id} AND guild_id = {member.guild.id} AND con_time = {con_time}")
-                db.query(f"UPDATE eco SET bank = {val} WHERE user_id = {member.id} AND guild_id = {guild_id}")
+                db.query(f"UPDATE voice_state SET dis_time = {now}, last_channel_id = {before.channel.id}, voice_active = {va} WHERE member_id= {member.id} AND guild_id = {member.guild.id} AND con_time = {con_time}")
+                db.query(f"UPDATE eco SET bank = {new_bal} WHERE member_id= {member.id} AND guild_id = {guild_id}")
                 db.disconnect()
             else:
                 print("Произошла ошибка, пользователь или сервер на котором он, не соответствуют данным из БД")
             
         
         else:
-            print(f"{member.name} перешел с канала {before.channel.name} на канал {after.channel.name}")
+            if before.channel.id == after.channel.id:
+                return
+            else:
+                print(f"{member.name} перешел с канала {before.channel.name} на канал {after.channel.name}")
          
 
 def setup(client):

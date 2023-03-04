@@ -13,13 +13,13 @@ if not os.path.exists('logs'):
     os.mkdir('logs')
 
 # Устанавливаем конфигурацию логирования
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(levelname)s %(name)s %(message)s',
-    handlers=[
-        logging.FileHandler(f'logs/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log', encoding='utf-8')
-    ]
-)
+# logging.basicConfig(
+#     level=logging.INFO,
+#     format='%(asctime)s %(levelname)s %(name)s %(message)s',
+#     handlers=[
+#         logging.FileHandler(f'logs/{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.log', encoding='utf-8')
+#     ]
+# )
 
 # Инициализация бота
 intent = discord.Intents.all()
@@ -42,6 +42,7 @@ async def on_ready():
             db.query(f"INSERT IGNORE INTO guild_config (guild_id) VALUES ({guild.id})")
         except:
             print(f"Ошибка при добавление или проверке сервера {guild.name} его id {guild.id}")
+    db.disconnect()
 
 def is_owner(ctx):
     return ctx.author.id in owners

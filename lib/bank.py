@@ -1,5 +1,6 @@
 from database import db
 
+
 class GuildMember:
     def __init__(self, id=None, member_id=None, guild_id=None):
         self.id = id

@@ -2,6 +2,7 @@ import discord
 from datetime import datetime
 from time import strftime
 import time
+from discord import app_commands
 from discord.utils import get
 from discord_slash import SlashCommand, SlashContext, cog_ext
 from discord_slash.utils.manage_commands import create_option
@@ -75,20 +76,31 @@ class eco(commands.Cog):
     #         return
     #     SlashCommand.bulk_upsert_commands(commands)
 
+    # Добавляем команду "My Command" в контекстное меню
+    async def transfer(interaction: discord.Interaction, member: discord.Member):
+        await interaction.response.send_message("Вызвана команда передачи баланса!")
+
     @commands.Cog.listener()
     async def on_message(self, message):
-        if message.author == self.bot.user:
+        if message.author == self.client.user:
             return
 
-        guild_member = GuildMember(message.author, message.guild)
-        print(guild_member.balance)
+        guild_member = GuildMember(member_id=message.author.id, guild_id=message.guild.id)
+        print(guild_member.balance())
+
+        self.command = app_commands.Command(
+            name='transfer',
+            description='Передать баланс',
+            callback=self.transfer, # set the callback of the context menu to "my_cool_context_menu"
+        )
+        
+        app_commands.CommandTree.add_command(self.client.tree.context_menu, self.command)
+        app_commands.CommandTree.sync()
+
+        return
 
         # Создаем контекстное меню, которое будет вызываться по правой кнопке мыши на сообщении
-        ctx_menu = discord.ui.ContextMenu()
-
-        # Добавляем команду "My Command" в контекстное меню
-        async def transfer(interaction: discord.Interaction):
-            await interaction.response.send_message("Вызвана команда передачи баланса!")
+        ctx_menu = discord.app_commands.context_menu()
 
         ctx_menu.command(transfer, "Передать баланс")
 
@@ -164,6 +176,6 @@ class eco(commands.Cog):
                 print(f"{member.name} перешел с канала {before.channel.name} на канал {after.channel.name}")
          
 
-def setup(client):
-	client.add_cog(eco(client))
+async def setup(client):
+	await client.add_cog(eco(client))
 	print("Модуль eco подключен и работает")

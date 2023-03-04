@@ -20,7 +20,7 @@ class Database:
             self.init()
 
         # Запускаем полученный запрос на выборку
-        cursor = self.connection.cursor(dictionary=True)
+        cursor = self.connection.cursor(dictionary=True, buffered=True)
         cursor.execute(query)
 
         # Забираем данные и обрубаем соединение

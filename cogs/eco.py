@@ -94,7 +94,7 @@ class eco(commands.Cog):
             callback=self.transfer, # set the callback of the context menu to "my_cool_context_menu"
         )
         
-        app_commands.CommandTree.add_command(self.client.tree.context_menu, self.command)
+        app_commands.CommandTree.add_command(self.client.tree.context_menu(), self.command)
         app_commands.CommandTree.sync()
 
         return

@@ -1,9 +1,10 @@
 import discord
+from discord.ext import commands
+from discord import app_commands
 from database import db
 import os
 import asyncio
 from datetime import datetime, timedelta
-from discord import InvalidArgument
 from discord.ext import commands
 from globals import conf, owners, token, prefix
 import logging
@@ -35,6 +36,14 @@ async def initiate_modules():
             except Exception as e:
                 print(f"Ошибка загрузки модуля {filename[:-3]}")
                 print(e)
+
+
+# Add the guild ids in which the slash command will appear. If it should be in all, remove the argument,
+# but note that it will take some time (up to an hour) to register the command if it's for all guilds.
+@client.tree.command(name="high-five", description="High Five Command", guild=discord.Object(id=772577481919430656))
+async def high_five(interaction: discord.Interaction):
+    await interaction.response.send_message("Hello!")
+
 
 @client.event
 async def on_ready():

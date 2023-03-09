@@ -40,14 +40,11 @@ async def initiate_modules():
 
 # Add the guild ids in which the slash command will appear. If it should be in all, remove the argument,
 # but note that it will take some time (up to an hour) to register the command if it's for all guilds.
-@client.tree.command(name="high-five", description="High Five Command", guild=discord.Object(id=772577481919430656))
-async def high_five(interaction: discord.Interaction):
-    await interaction.response.send_message("Hello!")
-
 
 @client.event
 async def on_ready():
     await initiate_modules()
+    await client.tree.sync()
 
     logging.info(f'{client.user.name} has connected to Discord!')
     for guild in client.guilds:

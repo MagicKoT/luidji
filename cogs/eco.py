@@ -9,14 +9,39 @@ from discord_slash.utils.manage_commands import create_option
 from discord.ext import commands
 from globals import conf
 from database import db
-from lib.bank import GuildMember
+from models.GuildMember import GuildMember
 
 
 class eco(commands.Cog):
     def __init__(self, client):
         self.client = client
         self.slash = SlashCommand(self.client, override_type=True)
+        
+        # Добавляем контекстные команды меню App
 
+        self.registered_commands = [
+            {'name': 'High Five', 'callback': self.high_five},
+            {'name': 'Transfer', 'callback': self.transfer},
+        ]
+
+        for command in self.registered_commands:
+            self.client.tree.add_command(app_commands.ContextMenu(name=command['name'], callback=command['callback']))
+
+
+    """ CONTEXT MENU APP COMMANDS """
+    """ ========================= """
+
+    # High Five Command
+    async def high_five(self, interaction: discord.Interaction, member: discord.Member):
+        await interaction.response.send_message(f"Hey, high five {message.author.mention}!")
+
+    # Transfer Command
+    async def transfer(self, interaction: discord.Interaction, member: discord.Member):
+        await interaction.response.send_message("Вызвана команда передачи баланса!")
+
+
+    """ METHODS """
+    """ ======= """
 
     # Функция запроса баланса с базы данных, требует тестирования и проверки на коректность использование ctx в разных функциях
     def balance(self, ctx):
@@ -24,7 +49,6 @@ class eco(commands.Cog):
         db.query(f"SELECT bank FROM eco WHERE member_id={member_id} AND guild_id{ctx.guild.id}")
         balance = db.cursor.fetchone()[0]["bank"]
         return balance
-
 
     @commands.Cog.listener()
     async def on_ready(self):
@@ -75,10 +99,6 @@ class eco(commands.Cog):
     #         await ctx.send("Вы ввели некорректное количество валюты.")
     #         return
     #     SlashCommand.bulk_upsert_commands(commands)
-
-    # Добавляем команду "My Command" в контекстное меню
-    async def transfer(interaction: discord.Interaction, member: discord.Member):
-        await interaction.response.send_message("Вызвана команда передачи баланса!")
 
     @commands.Cog.listener()
     async def on_message(self, message):
